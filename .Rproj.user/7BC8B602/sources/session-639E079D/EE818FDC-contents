@@ -1,0 +1,100 @@
+# create forest plots for the different tables and variants
+# setup page and load metadata
+rm(list = ls())
+
+library(meantiter)
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(grid)
+library(gtable)
+library(patchwork)
+
+
+# to suppress NA removal warnings from ggplot
+options(warn=-1)
+
+working_dir <- getwd()
+
+utility_dir <- file.path(working_dir, "code", "utility")
+data_dir <- file.path(working_dir,'data')
+figures_dir <- file.path(working_dir, "figures", "forest_plots")
+google_sheets_dir <- file.path(data_dir, "google_sheet_tables")
+#----------------------------------------------- set path to save -----------------------------------------------
+fileext <- "png"
+
+source(file.path(utility_dir,'plot_functions_auto_label.R'))
+source(file.path(utility_dir, "prepare_table_for_forest_plots.R"))
+source(file.path(working_dir, "code", "plotting", "boxplot_functions.R"))
+
+#-------------------------------------  SET TABLE NAME
+# table_save
+# table_no_save
+# table_no_WD
+# table_WD_save, etc...
+
+# here for multiple tables
+table_names = list('omicron_folddrops_preprocessed.csv',
+                   'omicron_folddrops_preprocessed_lessWD.csv',
+                   'omicron_folddrops_preprocessed_wSAVE.csv',
+                   'omicron_folddrops_preprocessed_wSAVE_lessWD.csv')
+
+table_name <- table_names[[2]]
+#for (table_name in table_names){
+for (table_name in table_names){
+  
+  
+  # create path to save for each table
+  tab_name <- strsplit(table_name, "\\.")[[1]][1]
+ 
+  path_to_save <- file.path(figures_dir, tab_name, "boxplots")
+  
+  # create subfolder for boxplots
+  suppressWarnings(dir.create(path_to_save, recursive = TRUE))
+  
+  
+  table_path <- file.path(google_sheets_dir,table_name)
+  
+  
+#----------------- load and prepare data
+  forest_data <- read.csv(table_path)
+  
+  
+  forest_data <- format_table_forest_plots(forest_data)
+ 
+  # do boxplots here
+  save_boxplots(forest_data, comp_antigen = "WT", x_var = "standardise_encounters", facet_var = "OmicronVariant", x_label = "Serum group",
+                to_save = path_to_save, do_titer_plot = T)
+  save_boxplots(forest_data, comp_antigen = "WT", x_var = "OmicronVariant", facet_var = "standardise_encounters", x_label =  "Omicron sub-lineage",
+                to_save = path_to_save, do_titer_plot = T)
+  
+  
+  for(var in c("Alpha", "Beta", "Delta")) {
+    save_boxplots(forest_data, comp_antigen = var, x_var = "standardise_encounters", facet_var = "OmicronVariant", x_label = "Serum group",
+                  to_save = path_to_save, do_titer_plot = F)
+    save_boxplots(forest_data, comp_antigen = var, x_var = "OmicronVariant", facet_var = "standardise_encounters", x_label =  "Omicron sub-lineage",
+                  to_save = path_to_save, do_titer_plot = F)
+    
+  }
+  
+  # filter to serum groups of interest
+  sub_data <- forest_data %>% filter(standardise_encounters %in% c("2x Vax", "3x Vax", "Inf + Vax",
+                                                                   "Vax + Inf", "Vax + BA.1", "Vax + BA.2", "Vax + BA.4/5"))
+  
+  
+  # do boxplots here
+  save_boxplots(sub_data, comp_antigen = "WT", x_var = "standardise_encounters", facet_var = "OmicronVariant", x_label = "Serum group",
+                to_save = path_to_save, do_titer_plot = T, plot_prefix = "sub-")
+  save_boxplots(sub_data, comp_antigen = "WT", x_var = "OmicronVariant", facet_var = "standardise_encounters", x_label =  "Omicron sub-lineage",
+                to_save = path_to_save, do_titer_plot = T, plot_prefix = "sub-")
+  
+  for(var in c("Delta")) {
+    save_boxplots(sub_data, comp_antigen = var, x_var = "standardise_encounters", facet_var = "OmicronVariant", x_label = "Serum group",
+                  to_save = path_to_save, do_titer_plot = F, plot_prefix = "sub-")
+    save_boxplots(sub_data, comp_antigen = var, x_var = "OmicronVariant", facet_var = "standardise_encounters", x_label =  "Omicron sub-lineage",
+                  to_save = path_to_save, do_titer_plot = F, plot_prefix = "sub-")
+    
+  }
+}

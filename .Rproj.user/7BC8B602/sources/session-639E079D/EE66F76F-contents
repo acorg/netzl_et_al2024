@@ -1,0 +1,52 @@
+# Setup workspace
+rm(list = ls())
+library(Racmacs)
+library(tidyverse)
+set.seed(Sys.time())
+
+working_dir <- getwd()
+bootstraps_dir <- file.path(working_dir,'data/bootstraps')
+map_names = list('omicron_map_preprocessed_lessWD_2xVax_conv',
+              'omicron_map_preprocessed_lessWD_2xVax_conv_ag_sub')
+bootstrap_blobs_figure_dir <- file.path(working_dir,'figures/bootstrap_blobs')
+
+#map_names = list('omicron_map_preprocessed_lessWD_2xVax_conv')
+confidence_levels = list(0.6,0.85)
+smoothing = 6
+gridspacing = 0.05
+methods = list('bayesian')
+
+for (method in methods){
+  for (map_name in map_names){  
+    
+    ext = paste0(method,'_bootstrap.ace')
+    bootstrap_map_path = file.path(bootstraps_dir, paste(map_name, ext, sep='_'))
+    
+    for (confidence_level in confidence_levels){
+      
+      map_with_bootstrap_data = read.acmap(bootstrap_map_path)
+      
+      map_with_blobs = bootstrapBlobs(
+          map_with_bootstrap_data,
+          conf.level = confidence_level,
+          smoothing = smoothing,
+          gridspacing = gridspacing,
+          method = "ks"
+        )
+      
+      ext = paste(method, 'bootstrap_blobs.png', sep='_')
+      ext = paste(as.character(confidence_level), ext, sep='_')
+      bootstrap_plot_name = paste(map_name, ext, sep='_')
+  
+      bootstrap_blobs_figure_path = file.path(bootstrap_blobs_figure_dir, 
+                                              bootstrap_plot_name)
+      
+      png(file=bootstrap_blobs_figure_path)
+        par(mar = c(0, 0, 0, 0))
+        plot(map_with_blobs)
+      dev.off()
+      
+    }
+        
+  }
+}

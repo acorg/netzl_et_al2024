@@ -1,0 +1,27 @@
+Variable,Color
+D614G,#393b79
+WT,#393b79
+B.1.1.7,#637939
+B.1.617.2,#d18652
+P.1,#b471ab
+B.1.351,#e7ba52
+2x Vax,grey
+WT conv,#393b79
+Alpha conv,#637939
+Gamma conv,#b471ab
+Beta conv,#e7ba52
+Delta conv,#d18652
+BA.1,#EF3737
+BA.2,#5B004C
+BA.4/5,#077e97
+BA.1.1,#9a0c0c
+BA.3,#09c8b9
+BA.2.12.1,#f500cc
+BA.2.75,#ff4500
+BA.1 conv,#EF3737
+BA.2 conv,#5B004C
+Vax + BA.1,#9a0c0c
+Vax + BA.2,#5B004C
+3x Vax,#2f4f4f
+Vax + Inf,#ff69b4
+Inf + Vax,#1e90ff

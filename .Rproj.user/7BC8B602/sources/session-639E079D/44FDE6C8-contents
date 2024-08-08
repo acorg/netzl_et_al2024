@@ -1,0 +1,152 @@
+##' Antigenic cartography
+#---------------------------  make titer tables
+source(file.path(working_dir, "code/input_mangling/create_titer_table.R"))
+
+# setup page and load metadata
+rm(list = ls())
+library(Racmacs)
+library(tidyverse)
+set.seed(100)
+
+
+# ---------------- set up directories
+working_dir <- getwd()
+
+utility_dir <- file.path(working_dir, "code/utility")
+data_dir <- file.path(working_dir,'data')
+google_sheets_dir <- file.path(data_dir, 'google_sheet_tables')
+titer_tables_dir <- file.path(data_dir, 'titer_tables')
+
+
+#------------------ Read in map for alignment and color info ------------------- 
+alignment_map <- read.acmap(file.path(data_dir, "maps/wilks_et_al-map_ndsubset_no_outliers.ace"))
+alignment_map[agNames(alignment_map) == "B.1.1.529"] <- "BA.1"
+
+ag_colors_info <- read.csv(file.path(data_dir, "metadata/ag_colors.csv"), stringsAsFactors = FALSE)
+sr_colors_info <- read.csv(file.path(data_dir, "metadata/sr_colors.csv"), stringsAsFactors = FALSE, sep = ";")
+
+# make the map
+make_map <- function(table, ag_colors_info, sr_colors_info, alignment_map, n_optim =1000) {
+  
+  # make map
+  map <- acmap(
+    ag_names = rownames(table),
+    sr_names = colnames(table),
+    titer_table = table
+  )
+  dilutionStepsize(map) <- 0
+  
+  sr_groups_map <- unlist(lapply(colnames(titerTable(map)), function(x) {
+    strsplit(x, "_")[[1]][1]
+  }))
+  
+  
+  #set serum groups
+  srGroups(map) <- factor(
+    sr_groups_map,
+    levels = c("4x Vax", "3x Vax", "2x Vax", "Vax + Inf","Vax + BA.1", "Vax + BA.2", "Vax + BA.4/5",
+               "Inf + Vax", "WT conv", "Alpha conv", "Beta conv", "Gamma conv", "Delta conv", "BA.1 conv", "BA.2 conv", "BA.4/5 conv")
+  )
+  
+  #set antigen colours
+  ag_colors <- ag_colors_info$Color[match(agNames(map), ag_colors_info$Antigen)]
+  agFill(map) <- ag_colors
+  
+  #set Serum colours
+  sr_colors <- sr_colors_info$Color[match(srGroups(map), sr_colors_info$Serum.group)]
+  srOutline(map) <- sr_colors
+  
+  # Set styles
+  srOutlineWidth(map) <- 1
+  srSize(map) <- 10
+  agSize(map) <- 18
+  
+  ptDrawingOrder(map) <- rev(ptDrawingOrder(map))
+  
+  
+  map_optim <- optimizeMap(
+    map,
+    number_of_dimensions = 2,
+    number_of_optimizations = n_optim,
+    minimum_column_basis = "none"
+  )
+  
+  # realign map
+  map_optim <- realignMap(map_optim, target_map = alignment_map)
+  
+  return(map_optim)
+}
+
+
+#----------------- Create maps for the different titer tables 
+# here for multiple tables
+table_names = list('omicron_titers_preprocessed.csv',
+                   'omicron_titers_preprocessed_lessWD.csv',
+                   'omicron_titers_preprocessed_wSAVE.csv',
+                   'omicron_titers_preprocessed_wSAVE_lessWD.csv')
+
+table_name <- table_names[[2]]
+#for (table_name in table_names){
+for (table_name in table_names[[2]]){
+
+  map_name <- gsub("titers", "map", table_name)
+  map_name <- gsub(".csv", "_full.ace", map_name)
+  
+  #----------------- read in data and plotting data
+  titer_table <- read.titerTable(file.path(titer_tables_dir, table_name))
+  
+  # filter to only variants of interest
+  titer_table <- titer_table[c("D614G","WT", "B.1.1.7","B.1.351", "P.1", "B.1.617.2", "BA.1","BA.1.1", "BA.2","BA.2.12.1", "BA.3", "BA.4/5", "BA.2.75"), ]
+  
+  map_optim <- make_map(titer_table, ag_colors_info = ag_colors_info, sr_colors_info = sr_colors_info, alignment_map = alignment_map)
+  dilutionStepsize(map_optim) <- 0
+  
+  save.acmap(map_optim, filename = file.path(data_dir, "maps", map_name))
+
+  # map without vaccine sera, inf+vax, vax+inf
+  sr_info <- unlist(lapply(colnames(titer_table), function(x){
+    str_split(x, "_")[[1]][1]
+  }))
+  
+  
+  sr_names <- unique(sr_info[grepl("conv|2x Vax", sr_info)])
+
+  map_conv <- subsetMap(map_optim, antigens = agNames(map_optim)[agNames(map_optim) %in% c("WT", "D614G", "B.1.617.2", "BA.1", "B.1.351",
+                                                                                            "P.1", "B.1.1.7", "BA.1.1", "BA.2",
+                                                                                            "BA.4/5", "BA.3", "BA.2.12.1", "BA.2.75")], 
+                        sera = srNames(map_optim)[srGroups(map_optim) %in% sr_names])
+  map_conv <- optimizeMap(map_conv, number_of_dimensions = 2, number_of_optimizations = 1000)
+  dilutionStepsize(map_conv) <- 0
+  map_conv <- realignMap(map_conv, alignment_map)
+ 
+  map_name <- gsub("full", "2xVax_conv", map_name)
+ 
+  save.acmap(map_conv, filename = file.path(data_dir, "maps", map_name))
+
+
+  map_conv <- subsetMap(map_optim, antigens = agNames(map_optim)[agNames(map_optim) %in% c("WT", "D614G", "B.1.617.2", "BA.1", "B.1.351",
+                                                                                            "P.1", "B.1.1.7","BA.2", "BA.2.75",
+                                                                                            "BA.4/5", "BA.2.12.1")], 
+                        sera = srNames(map_optim)[srGroups(map_optim) %in% sr_names])
+  map_conv <- optimizeMap(map_conv, number_of_dimensions = 2, number_of_optimizations = 1000)
+  dilutionStepsize(map_conv) <- 0
+  map_conv <- realignMap(map_conv, alignment_map)
+ 
+  map_name <- gsub("2xVax_conv", "2xVax_conv_ag_sub", map_name)
+
+  save.acmap(map_conv, filename = file.path(data_dir, "maps", map_name))
+  
+# subset full map to ags
+map_conv <- subsetMap(map_optim, antigens = agNames(map_optim)[agNames(map_optim) %in% c("WT", "D614G", "B.1.617.2", "BA.1", "B.1.351",
+                                                                                            "P.1", "B.1.1.7","BA.2", "BA.2.75",
+                                                                                            "BA.4/5", "BA.2.12.1")])
+  map_conv <- optimizeMap(map_conv, number_of_dimensions = 2, number_of_optimizations = 1000)
+  dilutionStepsize(map_conv) <- 0
+  map_conv <- realignMap(map_conv, alignment_map)
+ 
+  map_name <- gsub("2xVax_conv", "full", map_name)
+
+  save.acmap(map_conv, filename = file.path(data_dir, "maps", map_name))
+
+}
+

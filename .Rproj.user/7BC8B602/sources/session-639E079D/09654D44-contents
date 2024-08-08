@@ -1,0 +1,127 @@
+rm(list = ls())
+
+library(meantiter)
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(stringr)
+library(Racmacs)
+
+# to suppress NA removal warnings from ggplot
+options(warn=-1)
+
+working_dir <- getwd()
+
+utility_dir <- file.path(working_dir, "code", "utility")
+data_dir <- file.path(working_dir,'data')
+figures_dir <- file.path(working_dir, "figures", "forest_plots")
+google_sheets_dir <- file.path(data_dir, "google_sheet_tables")
+#----------------------------------------------- set path to save -----------------------------------------------
+fileext <- "png"
+
+source(file.path(utility_dir,'plot_functions_auto_label.R'))
+source(file.path(utility_dir, "prepare_table_for_forest_plots.R"))
+source(file.path(working_dir, "code", "plotting", "boxplot_functions.R"))
+#-------------------------------------  SET TABLE NAME
+
+table_name <- 'omicron_folddrops_preprocessed_lessWD.csv'
+#for (table_name in table_names){
+# create path to save for each table
+tab_name <- strsplit(table_name, "\\.")[[1]][1]
+
+table_path <- file.path(google_sheets_dir,table_name)
+
+#----------------- load and prepare data
+forest_data <- read.csv(table_path)
+
+
+forest_data <- format_table_forest_plots(forest_data)
+# filter forest data to single exposures
+single_exp_names <- unique(as.character(forest_data$standardise_encounters))
+single_exp_names <- single_exp_names[grep("2x|conv", single_exp_names)]
+
+forest_data <- forest_data %>%
+  filter(standardise_encounters %in% single_exp_names)
+
+# read duke map
+map <- read.acmap("data/maps/duke-update-map_ndsubset_no_outliers.ace")
+
+# get sr groups and variants
+sr_groups_map <-as.character(unique(srGroups(map)))
+ags_map <- unique(agNames(map))
+
+sr_groups_map_standard <- c("Delta conv", "Alpha conv", "BA.1 conv", "Gamma conv", "2x Vax",
+                            "WT conv", "Beta conv")
+
+forest_data <- forest_data %>%
+  filter(standardise_encounters %in% sr_groups_map_standard)
+
+# now look which Study has the most overlapping sr groups
+forest_data %>%
+  group_by(Study, Sourcelink) %>%
+  summarize(n_ags = length(unique(`Comparator antigen`)),
+            n_sr = length(unique(standardise_encounters))) %>%
+  filter(n_ags >= 4) %>%
+  filter(n_sr >= 4) -> data_summary
+
+CI_given <- c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE)
+data_summary$CI_given <- CI_given
+
+forest_data %>%
+  filter(Sourcelink %in% data_summary$Sourcelink) %>%
+  mutate(Info = paste(standardised_pseudo, "in", standardised_cell)) -> data_small
+
+# now load full map to calculate fold changes from D614G for the variants
+map_data <- read.acmap("data/maps/omicron_map_preprocessed_lessWD_2xVax_conv.ace")
+map_data <- subsetMap(map_data, sera = srNames(map_data)[grepl(paste0(data_small$Study, collapse = "|"), srNames(map_data))])
+
+table_map <- as.data.frame(titerTable(map_data))
+table_map %>%
+  mutate("ag_name" = rownames(table_map)) %>%
+  filter(ag_name %in% c("D614G", "WT", "B.1.617.2", "B.1.1.7", "P.1", "B.1.351", "BA.1", "BA.2")) %>%
+  pivot_longer(cols = colnames(table_map)[colnames(table_map) != "ag_name"],
+               names_to = "sr_name",
+               values_to = "titer")%>%
+  mutate(titer = log2(as.numeric(titer)))-> table_long
+
+table_long %>%
+  group_by(sr_name) %>%
+  mutate(FD_from_D614G = titer - titer[ag_name == "D614G"],
+         FD_from_WT = titer - titer[ag_name == "WT"] - titer)-> table_long
+
+table_long %>%
+  mutate(FD = ifelse(is.na(FD_from_D614G), FD_from_WT, FD_from_D614G),
+         FD = round(FD,2),
+         FD_variant = ifelse(is.na(FD_from_D614G), paste0("614D vs ", ag_name), paste0("D614G vs ", ag_name))) %>%
+  select(sr_name, FD_variant, FD) %>%
+  filter(!is.na(FD)) %>%
+  mutate(Study = strsplit(sr_name, "_")[[1]][7],
+         sr_group = strsplit(sr_name, "_")[[1]][1],
+         Info = unique(data_small$Info[data_small$Study == Study]))-> table_long
+
+table_long$FD_variant <- gsub("614D", "D614G", table_long$FD_variant)
+table_long %>%
+  ungroup() %>%
+  filter(!(FD_variant %in% c("D614G vs D614G", "D614D vs 614D", "614D vs WT", "D614G vs WT"))) %>%
+  mutate(colname = paste0(Study, "\n", Info)) %>%
+  mutate(colname = ifelse(Study == "Screaton", paste0(colname, "*"), colname)) %>%
+  select(colname, FD, FD_variant, sr_group) %>%
+  pivot_wider(id_cols = c("FD_variant", "sr_group"), names_from = colname, values_from = FD,
+              values_fill = NA, values_fn = mean) -> table_wide
+
+table_wide$sr_group <- gsub("WT", "1st wave", table_wide$sr_group)
+table_wide[,6] <- round(table_wide[,6],2)
+variant_nr <- c("2x Vax" = "2x vaccinated","Alpha conv" = "B.1.1.7 convalescent",
+                "Beta conv" = "B.1.351 convalescent", "Gamma conv" = "P.1 convalescent",
+                "Delta conv" = "B.1.617.2 convalescent",
+                "BA.1 conv" = "BA.1 convalescent", "BA.2 conv" = "BA.2 convalescent")
+
+table_wide %>%
+  mutate(sr_group = variant_nr[sr_group]) %>%
+  filter(sr_group != "BA.2 convalescent") -> table_wide
+
+table_wide$sr_group <- factor(table_wide$sr_group, levels = variant_nr)
+
+table_wide[order(table_wide$sr_group),] -> table_wide
+
+write.csv(table_wide, "data/summary_tables/duke_fold_drops.csv")

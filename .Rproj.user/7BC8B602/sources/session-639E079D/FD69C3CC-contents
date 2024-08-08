@@ -1,0 +1,99 @@
+# Setup workspace
+rm(list = ls())
+library(Racmacs)
+library(tibble)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+
+#----------------------- set directories
+working_dir <- getwd()
+
+code_dir <- file.path(working_dir, "code")
+data_dir <- file.path(working_dir,'data')
+map_dir <- file.path(data_dir, "maps")
+figures_dir <- file.path(working_dir, "figures", "fold_change")
+metadata_dir <- file.path(working_dir,'data', 'metadata')
+
+
+#-------------------- load functions
+source(file.path(code_dir, "plotting", 'fold_change_functions'))
+
+homologous_ags <- c(
+  "3x Vax" = "WT",
+  "2x Vax" = "WT",
+  "WT conv" = "WT",
+  "Alpha conv" = "B.1.1.7",
+  "Beta conv" = "B.1.351",
+  "Gamma conv" = "P.1",
+  "Delta conv" = "B.1.617.2",
+  "BA.2 conv" = "BA.2",
+  "BA.1 conv" = "BA.1"
+)
+
+
+# -------------------- do the plotting per map
+
+map_names <- list('omicron_map_preprocessed_full.ace',
+                  'omicron_map_preprocessed_lessWD_full.ace',
+                  'omicron_map_preprocessed_wSAVE_full.ace',
+                  'omicron_map_preprocessed_wSAVE_lessWD_full.ace')
+
+map_names <- 
+for(map_name in map_names) {
+  
+  # set name for fit
+  plot_name <- gsub("_full.ace", "_fold_change.png", map_name)
+  
+  lv_name <- gsub(".ace", "_LV.ace", map_name)
+  pv_name <- gsub(".ace", "_PV.ace", map_name)
+  
+  map<- read.acmap(file.path(map_dir, map_name))
+  map_lv<- read.acmap(file.path(map_dir, lv_name))
+  map_pv<- read.acmap(file.path(map_dir, pv_name))
+  
+  agFillValues <- mapValues(agFill, agNames, map)
+  srGroupValues <- mapValues(srOutline, srGroups, map)
+  
+  
+  
+  all_groups_lv <- calc_fold_changes(map_lv, titerTable(map_lv)) %>%
+    mutate("Antigen type" = "Live-virus")
+  all_groups_pv <- calc_fold_changes(map_pv, titerTable(map_pv)) %>%
+    mutate("Antigen type" = "Pseudovirus")
+  all_groups <- calc_fold_changes(map, titerTable(map)) %>%
+    mutate("Antigen type" = "Combined")
+  
+  combo <- rbind(all_groups_lv, all_groups_pv, all_groups)
+  combo[is.na(combo)] <- NA
+  
+  
+  # Cycle through serum groups
+  plots <- list()
+  for (sr_group_name in names(homologous_ags)) {
+    
+    gp <- do_fold_change_plot(combo, sr_group_name)
+    gp_diff <- do_ratio_plot(combo, sr_group_name)
+    
+    combo_plot <- (gp + theme(axis.title.x=element_blank(),
+                              axis.text.x=element_blank(),
+                              axis.ticks.x=element_blank())) /gp_diff +
+      plot_layout(heights = c(2, 1)) 
+    
+    plots <- c(plots, list(combo_plot))
+    
+  }
+  
+  patchwork::wrap_plots(plots, guides = "collect", tag_levels = "new") + 
+    plot_annotation(tag_levels = list(c("A", " ", "B", " ","C", " ", "D", " ", "E", " ", "F", " ", "G", "", "H", "", "I"), " ")) + 
+    guide_area() -> all_plots
+  
+  ggsave(file.path(figures_dir, plot_name), plot = all_plots, width = 12, height = 14)
+  
+  
+  
+}
+
+
