@@ -108,6 +108,7 @@ for (table_name in table_names){
                                          span = 0.75, cum_means = cum_means,
                                          omicron_variant_levels = c("BA.1"), show_loess = FALSE)
     
+  
     ggsave(file.path(path_to_save, paste0(comp_ag, "_sub_cumMean_44d_fc.", fileext)), lowess, dpi = 300, width = 7, height = 3)
     ggsave(file.path(path_to_save, paste0(comp_ag, "_sub_cumMean_long_fc.", fileext)), lowess_long, dpi = 300, width = 7, height = 3)
     

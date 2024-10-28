@@ -1,6 +1,6 @@
 ag_colors <- read.csv(file.path("data", "metadata", "ag_colors.csv"))
 
-standardise_time_format <- function(forest_data, group_by_sr_group = FALSE, group_not_by_comparator= FALSE, group_by_omicron = TRUE){
+standardise_time_format <- function(forest_data, group_by_sr_group = FALSE, group_not_by_comparator= FALSE, group_by_omicron = TRUE, add_time_since_first = TRUE){
  
    for(r in 1:nrow(forest_data)){
     test <- forest_data[r,]
@@ -18,6 +18,10 @@ standardise_time_format <- function(forest_data, group_by_sr_group = FALSE, grou
   }
   
   forest_data$standardise_time <- as.Date(forest_data$year, format = "%Y.%m.%d")
+  
+  if(!add_time_since_first){
+    return(forest_data)
+  }
   
   if(group_by_sr_group){
     
@@ -183,7 +187,7 @@ calculate_cumulative_mean <- function(forest_data_sub, dates, target_var = "log_
   for(date in 1:length(dates)){
     
     forest_data_sub %>%
-      filter(date_group <= date) %>%
+      filter(date_group <= dates[date]) %>%
       group_by(OmicronVariant, standardise_encounters, `Comparator antigen`) %>%
       summarize(n = length(!!var),
                 lower = Rmisc::CI(!!var)["lower"],

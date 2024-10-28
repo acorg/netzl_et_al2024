@@ -1,0 +1,90 @@
+Study name,Source link,Time,Country,Assay type,Cell line
+Pfizer/Biontech33,https://twitter.com/Carolynyjohnson/status/1468583768961130501,08/12/2021,USA,Pseudovirus,N/A
+Pfizer/Biontech34,https://www.pfizer.com/news/press-release/press-release-detail/pfizer-and-biontech-provide-update-omicron-variant ,08/12/2021,USA,Pseudovirus,N/A
+Sigal35,https://secureservercdn.net/50.62.198.70/1mx.c5c.myftpupload.com/wp-content/uploads/2021/12/MEDRXIV-2021-267417v3-Sigal.pdf,08/12/2021,"South Africa, Germany",Authentic virus,H1299-ACE2
+Snape36,https://www.medrxiv.org/content/10.1101/2021.12.10.21267534v1.full-text,10/12/2021,UK,Authentic virus,Vero
+Poehlmann37,https://doi.org/10.1101/2021.12.12.472286,12/12/2021,Germany,VSV,Vero
+Balazs15,https://doi.org/10.1101/2021.12.14.21267755,14/12/2021,USA,Lentiviral,293T-ACE2
+Schmidt38,https://doi.org/10.1101/2021.12.12.21267646,12/12/2021,USA,HIV-1,HT1080/ACE2
+Israel MoH39,https://x.com/JScholar/status/1470110894856286216,12/12/2021,Israel,Authentic virus,N/A
+HKU40,http://www.med.hku.hk/en/news/press/20211212-omicron-avoids-killing-by-blood-serum,12/12/2021,China,Authentic virus,N/A
+Gruell41,https://doi.org/10.1101/2021.12.14.21267769,14/12/2021,Germany,Lentiviral,293T-ACE2
+Ho42,https://www.biorxiv.org/content/10.1101/2021.12.14.472719v1.article-info,14/12/2021,USA,VSV,Vero-E6
+Ho42,https://www.biorxiv.org/content/10.1101/2021.12.14.472719v1.article-info,14/12/2021,USA,Authentic virus,Vero TMPRSS2
+Schwartz43,https://www.biorxiv.org/content/10.1101/2021.12.14.472630v1.full.pdf,14/12/2021,"France, Belgium",Authentic virus,S-Fuse
+Montefiori/Doria-Rose44,https://www.medrxiv.org/content/10.1101/2021.12.15.21267805v2.full.pdf,15/12/2021,USA,Lentiviral,N/A
+Montefiori/Doria-Rose44,https://www.medrxiv.org/content/10.1101/2021.12.15.21267805v2.full.pdf,15/12/2021,USA,Authentic virus,N/A
+Gao45,https://doi.org/10.1101/2021.12.16.472391,16/12/2021,China,VSV,Vero
+Chen46,https://doi.org/10.1101/2021.12.17.21267961,17/12/2021,China,Lentiviral,293T-ACE2
+Krammer47,https://doi.org/10.1101/2021.12.20.21268134,20/12/2021,USA,Authentic virus,Vero-E6 TMPRSS2
+Shi48,https://www.biorxiv.org/content/10.1101/2021.12.20.473584v1.full.pdf,20/12/2021,USA,Authentic virus,Vero-E6
+Suthar18,https://doi.org/10.1101/2021.12.20.473557,20/12/2021,USA,Authentic virus,Vero-E6 TMPRSS2
+Cicin-Sain49,https://www.medrxiv.org/content/10.1101/2021.12.21.21267898v1.full.pdf,21/12/2021,Germany,VSV,Vero-E6
+Screaton6,https://www.cell.com/cell/pdf/S0092-8674(21)01578-6.pdf?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS0092867421015786%3Fshowall%3Dtrue,22/12/2021,UK,Authentic virus,Vero
+Sahin50,https://www.medrxiv.org/content/10.1101/2021.12.22.21268103v1.full.pdf,22/12/2021,Germany,VSV,Vero76
+Weiss51,https://doi.org/10.1101/2021.12.22.473880,22/12/2021,USA,Lentiviral,293T-ACE2/TMPRSS2
+Haveri52,https://doi.org/10.1101/2021.12.22.21268273,22/12/2021,Finland,Authentic virus,Vero-E6
+Arien53,https://www.medrxiv.org/content/10.1101/2021.12.23.21268316v1.full.pdf,23/12/2021,Belgium,Authentic virus,Vero
+Wang54,https://www.biorxiv.org/content/10.1101/2021.12.24.474138v1.full.pdf,24/12/2021,China,VSV,Vero-E6
+Takahashi55,https://doi.org/10.1101/2021.12.24.474091,24/12/2021,Japan,VSV,Vero-E6 TMPRSS2
+Eckerle56,https://doi.org/10.1101/2021.12.28.21268491,28/12/2021,Switzerland,Authentic virus,Vero-E6
+Landau57,https://www.biorxiv.org/content/10.1101/2021.12.28.474369v1.full.pdf,28/12/2021,USA,Lentiviral,293T-ACE2
+Suzuki58,https://doi.org/10.1101/2021.12.28.21268481,01/01/2022,Japan,Authentic virus,Vero-E6 TMPRSS2
+Suzuki58,https://doi.org/10.1101/2021.12.28.21268481,01/01/2022,Japan,VSV,Vero-E6 TMPRSS2
+Barouch59,https://doi.org/10.1101/2022.01.02.22268634,02/01/2022,USA,Lenti-CMV,293T-ACE2
+Sanders60,https://doi.org/10.1101/2022.01.03.21268582,03/01/2022,"The Netherlands, USA",Lentiviral,293T-ACE2
+Garg61,https://doi.org/10.1101/2022.01.04.22268747,04/01/2022,India,Authentic virus,Vero-E6
+Wang(CDC)62,https://www.biorxiv.org/content/10.1101/2021.11.24.469906v2.full.pdf,05/01/2022,USA,Authentic virus,Vero-E6 TMPRSS2
+Gintsburg63,https://doi.org/10.1101/2022.01.15.22269335,15/01/2022,Russia,Authentic virus,Vero-E6
+MŸnch64,https://doi.org/10.1101/2022.01.17.22269201,17/01/2022,Germany,VSV,Vero-E6
+Poovorawan65,https://doi.org/10.1101/2022.01.17.22269415,17/01/2022,Thailand,Authentic virus,N/A
+Mizukami17,https://doi.org/10.1101/2022.01.20.22269587,20/01/2022,Japan,Authentic virus,Vero-E6 TMPRSS2
+Xia/Swanson/Shi17,https://doi.org/10.1101/2022.01.21.476344,21/01/2022,USA,Pseudovirus,Vero-E6
+Pajon/Doria-Rose66,DOI:10.1056/NEJMc2119912,26/01/2022,USA,Lentiviral,293T-ACE2
+Protzer67,https://doi.org/10.1038/s41591-022-01715-4,28/01/2022,Germany,Authentic virus,MDA-MB-231-hACE2
+Medigeshi68,https://doi.org/10.1101/2022.01.28.22269990,28/01/2022,India,Authentic virus,Vero-E6
+Yu/Barouch69,https://doi.org/10.1101/2022.02.06.22270533,06/02/2022,USA,Lenti-CMV,293T-ACE2
+Iketani/Ho70,https://doi.org/10.1101/2022.02.07.479306,07/02/2022,USA,VSV,Vero-E6
+Xie71,https://doi.org/10.1101/2022.02.07.479349,07/02/2022,China,VSV,Huh 7
+Peiris/Cheng72,https://doi.org/10.21203/rs.3.rs-1331606/v1,08/02/2022,China,Authentic virus,Vero-E6 TMPRSS2
+Sato73,https://doi.org/10.1101/2022.02.14.480335,14/02/2022,Japan,HIV-1,HOS-ACE2/TMPRSS2
+Mykytyn/Haagmans74,https://doi.org/10.1101/2022.02.23.481644,23/02/2022,The Netherlands,VSV,Vero-E6
+Suzuki/Kawaoka75,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8887076/,24/02/2022,USA,Authentic virus,Vero-E6 TMPRSS2
+Veesler/Bowen76,https://doi.org/10.1101/2022.03.15.484542,15/03/2022,USA,VSV,Vero-E6 TMPRSS2
+Shi/Biontech77,https://www.biorxiv.org/content/10.1101/2022.03.24.485633v1.full.pdf,24/03/2022,USA,Spike,Vero-E6
+Moore78,https://doi.org/10.1016/j.chom.2022.03.029,25/03/2022,South Africa,Lentiviral,293T-ACE2
+To79,https://doi.org/10.1016/S2666-5247(22)00060-X,28/03/2022,China,Authentic virus,Vero-E6 TMPRSS2
+Krumbholz80,https://d197for5662m48.cloudfront.net/documents/publicationstatus/78158/preprint_pdf/b40539cba449edac49b01a99c520226b.pdf,29/03/2022,Germany,N/A,N/A
+Shi281,https://www.biorxiv.org/content/10.1101/2022.03.30.486409v1,30/03/2022,USA,Spike,Vero
+Thalin82,https://doi.org/10.1101/2022.04.02.22273333,02/04/2022,Sweden,Authentic virus,Vero-E6
+Klein83,https://www.biorxiv.org/content/10.1101/2022.04.06.487257v2.full.pdf,06/04/2022,Germany,Lentiviral,293T-ACE2
+Hoffman84,https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(22)00224-9/fulltext,12/04/2022,Germany,Pseudovirus,Vero
+Stiasny85,https://doi.org/10.21203/rs.3.rs-1536794/v1,13/04/2022,Austria,Authentic virus,Vero-E6
+Liu/Evans86Ê,https://www.sciencedirect.com/science/article/pii/S1931312822002207#fig3,15/04/2022,USA,Lentiviral,293T-ACE2
+Sigal/Khan287,https://www.medrxiv.org/content/10.1101/2022.04.29.22274477v1.full.pdf,29/04/2022,"South Africa, Germany",Authentic virus,H1299-E3
+Xie/Cao88,https://www.biorxiv.org/content/10.1101/2022.04.30.489997v1,30/04/2022,China,VSV,293T
+Wang289,https://www.sciencedirect.com/science/article/pii/S1931312822002438,03/05/2022,China,Pseudovirus,Vero
+Poehlmann290,https://www.cell.com/cell-host-microbe/fulltext/S1931-3128(22)00223-2,05/05/2022,Germany,Pseudovirus,Vero
+Sigal/Khan91,https://www.nature.com/articles/s41586-022-04830-x,06/05/2022,"South Africa, Germany",Authentic virus,H1299-E3
+Chen/Zhou16,https://www.biorxiv.org/content/10.1101/2022.05.09.491254v1.abstract,09/05/2022,China,HIV-1,293T-ACE2
+Kimpel/Roessler92,https://www.medrxiv.org/content/10.1101/2022.05.10.22274906v1.full-text,10/05/2022,Austria,Authentic virus,Vero ACE2/TMPRSS2
+Liu293,https://www.biorxiv.org/content/10.1101/2022.05.16.492158v1.full.pdf,16/05/2022,USA,Lentiviral,293T
+Barouch294,https://www.medrxiv.org/content/10.1101/2022.05.16.22275151v1.full.pdf,16/05/2022,USA,Pseudovirus,293T
+Barclay95,https://www.biorxiv.org/content/10.1101/2022.05.20.492779v1.full.pdf,20/05/2022,UK,Lentiviral,293T-ACE2
+Screaton2,https://www.biorxiv.org/content/10.1101/2022.05.21.492554v1.full.pdf,21/05/2022,UK,Lentiviral,293T/17-ACE2
+Peacock/Doores96,https://www.biorxiv.org/content/10.1101/2022.05.25.493397v1.full.pdf,25/05/2022,UK,Lentiviral,293T-ACE2
+Ho/Liu97,https://www.biorxiv.org/content/10.1101/2022.05.26.493517v1.full.pdf,26/05/2022,USA,VSV,Vero-E6
+Weiss/Wang98,https://www.biorxiv.org/content/10.1101/2022.06.01.494385v1.full.pdf,01/06/2022,USA,Lentiviral,293T-ACE2/TMPRSS2
+Kurhade/Shi99,https://doi.org/10.1101/2022.06.05.494889,05/06/2022,USA,Authentic virus,Vero-E6
+Weiss/Wang2100,https://doi.org/10.1101/2022.07.05.498883,05/07/2022,USA,Lentiviral,293T-ACE2/TMPRSS2
+Turville101,https://doi.org/10.1101/2022.07.07.22277128,07/07/2022,Australia,Authentic virus,HAT-24
+Wang/Cao102,https://doi.org/10.1101/2022.07.18.500332,18/07/2022,China,VSV,Huh 7
+Murrel103,https://doi.org/10.1101/2022.07.19.500716,19/07/2022,Sweden,N/A,293T-ACE2
+Liu/Qu104,https://doi.org/10.1101/2022.07.21.501010,21/07/2022,USA,Lentiviral,293T-ACE2
+Shi/Xie105,https://doi.org/10.1101/2022.07.29.502055,29/07/2022,USA,Authentic virus,Vero-E6
+Ho/Wang106,https://doi.org/10.1101/2022.07.31.502235,31/07/2022,USA,VSV,Vero-E6
+Sahin/Muik107,https://doi.org/10.1101/2022.08.02.502461,02/08/2022,Germany,VSV,Vero76
+Sahin/Muik107,https://doi.org/10.1101/2022.08.02.502461,02/08/2022,Germany,Authentic virus,Vero-E6
+Wang/Wang108,https://doi.org/10.1101/2022.08.04.502716,04/08/2022,China,VSV,Vero-E6
+Klein/Gruell109,https://doi.org/10.1101/2022.08.04.502609,04/08/2022,Germany,Lentiviral,293T-ACE2
+Liu/Qu2110,https://doi.org/10.1101/2022.08.14.503921,14/08/2022,USA,Lentiviral,293T-ACE2

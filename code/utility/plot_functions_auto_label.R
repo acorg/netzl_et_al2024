@@ -633,7 +633,12 @@ vertical_labelling_plot <- function(base_plot, data, hline_by, hline_positions, 
   l_hline_by <- length(hline_by)
   y_adjust <- 1
   
-  text_size <- axis_text_size*1.5
+  if(axis_text_size > 7){
+    text_size <- axis_text_size*0.8
+  } else {
+    text_size <- axis_text_size*1.5
+  }
+  
   breaks <- c(0, hline_positions, nrow(data) +1)
   
   if(l_hline_by > 1) {
@@ -673,11 +678,12 @@ vertical_labelling_plot <- function(base_plot, data, hline_by, hline_positions, 
   # below gave an error
   #labels <- data[breaks[2:length(breaks)]-1,hline_by] %>% pull(hline_by)
   
+  
   labels <- data[breaks[2:length(breaks)]-1,hline_by]
+  labels <- labels[[hline_by]]
   
   mean_labels <-mean_data$mean_value[match(labels, mean_data[[hline_by]])]
   
-
   if(outer_by %in% c("vacc_type", "vaccine_manufacturer")) {
     labels[grepl("conv|nf", labels)] <- ""
   }
@@ -836,7 +842,7 @@ calc_mean_per_grouping <- function(data, hline_by, meantiter_package = FALSE) {
 
 do_forest_titer_drop <- function(forest_data, hline_by = "", row_label, show_mean, axis_text_size) {
   
-  forest_data$standardise_encounters <- gsub("WT", "First wave", forest_data$standardise_encounters)
+ # forest_data$standardise_encounters <- gsub("WT", "First wave", forest_data$standardise_encounters)
   comp_antigen <- as.character(unique(forest_data$`Comparator antigen`))
   
   # comment if you want sublineage psuedo
@@ -981,9 +987,11 @@ do_forest_titer_drop <- function(forest_data, hline_by = "", row_label, show_mea
     }
     
     if(show_mean) {
+      
       if(row_label){
         mean_data <- forest_data[grepl("Mean", forest_data$rowlabel),]
       }
+      
       
       gp +
         geom_point(data = mean_data, 
@@ -992,6 +1000,7 @@ do_forest_titer_drop <- function(forest_data, hline_by = "", row_label, show_mea
                        color = OmicronVariant),
                    shape = 21, stroke = 1.5,
                        size =5, fill = fill_colors[unique(as.character(mean_data$`Comparator antigen`))]) -> gp
+      
     }
     
     # ad horizontal labelling
@@ -1203,6 +1212,8 @@ split_up_forest_plot_drops <- function(data, hline_by = "", row_label = TRUE, sh
    alpha <- NULL
    delta <- NULL
    ba1 <- NULL
+   
+  
     wt <- data %>% filter(`Comparator antigen` %in% c("WT","Wu-1", "WA1","D614G","B.1", "Wu-1?")) %>% do_forest_titer_drop(hline_by, row_label, show_means, axis_text_size)
     
     if("Beta" %in% data$`Comparator antigen`) {
