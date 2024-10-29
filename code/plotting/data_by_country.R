@@ -107,7 +107,10 @@ ggplot() +
   scale_fill_steps(breaks = unique(country_count$n),
                    name = "# Reports per country") + 
   new_scale_fill() + 
-  geom_jitter(data = studies, aes(x=long, y= lat, group = Study, fill = standardise_time), width = 7, height = 5, size = 1.5, shape = 21, alpha = 0.7) +
+  geom_jitter(data = studies %>%
+                filter(n >= 4), aes(x=long, y= lat, group = Study, fill = standardise_time), width = 7, height = 5, size = 1.5, shape = 21, alpha = 0.7) +
+  geom_jitter(data = studies %>%
+                filter(n < 4), aes(x=long, y= lat, group = Study, fill = standardise_time), width = 2, height = 2, size = 1.5, shape = 21, alpha = 0.7) +
   scale_fill_viridis_c(breaks = time_vals,
                        labels = time_vals,
                        name = "Date of report") + 
@@ -115,6 +118,7 @@ ggplot() +
   ylab("Latitude") +
   theme(legend.position = c(0.1, 0.7)) -> w_plot
  
+
 ggsave(file.path(figures_dir, "studies_by_country.png"), w_plot, dpi = 300, width = 10, height = 7)
   
 # make stacked bar chart
