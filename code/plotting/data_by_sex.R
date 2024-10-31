@@ -55,3 +55,16 @@ studies_f %>%
   ylab("Fraction of female subjects") -> p
 
 ggsave(file.path(figures_dir, "fraction_of_female.png"), p, dpi = 300, width = 12, height = 5)
+
+
+studies %>%
+  filter(is.na(N.female.)) %>%
+  select(Sera.details.long) %>%
+  unique() %>%
+  count()
+
+studies %>%
+  filter(is.na(N.female.)) %>%
+  select(Study) %>%
+  unique() %>%
+  count()
