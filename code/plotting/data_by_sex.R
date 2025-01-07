@@ -68,3 +68,15 @@ studies %>%
   select(Study) %>%
   unique() %>%
   count()
+
+studies_f %>%
+  filter(!is.na(N.female.)) %>%
+  select(Study) %>%
+  unique() %>%
+  count()
+
+studies %>%
+ # filter(!is.na(N.female.)) %>%
+  select(Study) %>%
+  unique() %>%
+  count()

@@ -65,9 +65,23 @@ do_hist_single_sr_group <- function(data, sr_group_spec, color) {
   return(plot)
 }
 
+stop()
+detectable_results %>%
+  arrange(abs(residual)) %>%
+  filter(abs(residual) >= 5) -> high_res
 
+View(titerTable(map)[,high_res$sr_num])
+
+ag_pretty <- c("D614G" = "D614G",
+               "WT" = "WT",
+               "B.1.1.7" = "Alpha",
+               "B.1.351" = "Beta",
+               "P.1" = "Gamma",
+               "B.1.617.2" = "Delta",
+               "BA.1" = "BA.1",
+               "BA.2" = "BA.2")
 # have to change it to include new antigens and sera
-detectable_results$ag_pretty <- detectable_results$ag_name # factor(ag_pretty[as.character(detectable_results$ag_name),], levels = ag_pretty$val)
+detectable_results$ag_pretty <- factor(ag_pretty[as.character(detectable_results$ag_name)], levels = ag_pretty)
 detectable_results$sr_pretty <- detectable_results$sr_group #factor(sr_pretty[as.character(detectable_results$sr_group),], levels = sr_pretty$val)
 
     # Antigen and serum group tab
@@ -94,16 +108,17 @@ detectable_results$sr_pretty <- detectable_results$sr_group #factor(sr_pretty[as
             values = agFillScale(map)
           ) +
           xlim(c(-10,10))+
-          ylim(c(0, 8))+
+          ylim(c(-10, 10))+
           facet_grid(
             cols = vars(sr_pretty),
             rows = vars(ag_pretty)
           ) +
           theme_bw() +
+          coord_fixed() +
           theme(legend.position = "none",
                strip.text.x = element_text(size = 6),
                strip.text.y = element_text(size = 6))-> gp
 
 
-ggsave(plot = gp, filename = file.path(figure_dir, "scatter_pred_vs_measured.png"), width = 8, height = 10, dpi = 300)
+ggsave(plot = gp, filename = file.path(figure_dir, "scatter_pred_vs_measured.png"), width = 8, height = 8, dpi = 300)
         
