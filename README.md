@@ -5,7 +5,7 @@ Please cite the original publication if any data or code from this repository is
 
 The repository's DOI was created with Zenodo (https://docs.github.com/en/repositories/archiving-a-github-repository/referencing-and-citing-content)
 
-All data and metadata can be found in the `data` directory. The raw data is a local copy of [this google sheet](https://docs.google.com/spreadsheets/d/1IvUwoWMAtJULnN-pohUoPio0RmHZIRj8OTtv9r4RFl4/edit?gid=0#gid=0) and stored in  the `data/google_sheet_tables` directory. 
+All data and metadata can be found in the `data` directory. The raw data is a local, *unformatted* copy of [this google sheet](https://docs.google.com/spreadsheets/d/1IvUwoWMAtJULnN-pohUoPio0RmHZIRj8OTtv9r4RFl4/edit?gid=0#gid=0) and stored in  the `data/google_sheet_tables` directory. *To use the `format_table_forest_plots` function to format the data, which is in most scripts, the local, unformatted table has to be used as input. The formatted version online results in errors due to factor levels of variables.*
 
 The forest plots in Figure 1 and supplementary Figure is created with the `code/plotting/forest_plots.R` script.
 
