@@ -43,6 +43,7 @@ hist_diff <- ggplot(detectable_results) +
   labs(x= "Measured - predicted log2 titers", y = "Count", title = paste0("Mean = ", mean, "; SD = ", sd)) +
   theme_bw()
 
+
 ggsave(plot = hist_diff, filename = file.path(figure_dir, "histogram_residuals.png"), width = 5, height = 4, dpi = 300)
 
 do_hist_single_sr_group <- function(data, sr_group_spec, color) {
@@ -65,12 +66,8 @@ do_hist_single_sr_group <- function(data, sr_group_spec, color) {
   return(plot)
 }
 
-stop()
-detectable_results %>%
-  arrange(abs(residual)) %>%
-  filter(abs(residual) >= 5) -> high_res
 
-View(titerTable(map)[,high_res$sr_num])
+
 
 ag_pretty <- c("D614G" = "D614G",
                "WT" = "WT",
@@ -121,8 +118,8 @@ detectable_results$homologous <- sapply(1:nrow(detectable_results), function(x){
           scale_color_manual(
             values = c("TRUE" = "red", "FALSE" = "transparent")
           ) +
-          xlim(c(-10,10))+
-          ylim(c(-10, 10))+
+          xlim(c(-15,15))+
+          ylim(c(-15, 15))+
           facet_grid(
             cols = vars(sr_pretty),
             rows = vars(ag_pretty)
