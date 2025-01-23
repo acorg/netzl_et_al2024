@@ -84,28 +84,42 @@ ag_pretty <- c("D614G" = "D614G",
 detectable_results$ag_pretty <- factor(ag_pretty[as.character(detectable_results$ag_name)], levels = ag_pretty)
 detectable_results$sr_pretty <- detectable_results$sr_group #factor(sr_pretty[as.character(detectable_results$sr_group),], levels = sr_pretty$val)
 
+
+detectable_results$homologous <- sapply(1:nrow(detectable_results), function(x){
+  if(detectable_results$ag_pretty[x] == "D614G" & detectable_results$sr_group[x] == "WT conv"){
+    return(TRUE)
+  } else {
+    grepl(detectable_results$ag_pretty[x], detectable_results$sr_group[x])
+  }
+})
+
     # Antigen and serum group tab
         detectable_results %>%
           ggplot(
             aes(
               x = predicted_logtiter,
               y = measured_logtiter,
-              color = ag_name
+              fill = ag_name,
+              color = homologous
             )
           ) +
           labs(x = "Predicted log2 titer",
                y = "Measured log2 titer") +
           # geom_smooth() +
           geom_point(
-            alpha = 0.1
+            alpha = 0.1,
+            shape = 21
           ) +
           geom_abline(
             slope = 1,
             intercept = 0,
             linetype = "dashed"
           ) +
-          scale_color_manual(
+          scale_fill_manual(
             values = agFillScale(map)
+          ) +
+          scale_color_manual(
+            values = c("TRUE" = "red", "FALSE" = "transparent")
           ) +
           xlim(c(-10,10))+
           ylim(c(-10, 10))+
@@ -118,7 +132,6 @@ detectable_results$sr_pretty <- detectable_results$sr_group #factor(sr_pretty[as
           theme(legend.position = "none",
                strip.text.x = element_text(size = 6),
                strip.text.y = element_text(size = 6))-> gp
-
 
 ggsave(plot = gp, filename = file.path(figure_dir, "scatter_pred_vs_measured.png"), width = 8, height = 8, dpi = 300)
         
