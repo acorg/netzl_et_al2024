@@ -6,7 +6,7 @@ library(tibble)
 library(tidyr)
 library(stringr)
 library(huxtable)
-
+library(ggplot2)
 
 rm(list = ls())
 
@@ -40,11 +40,12 @@ table_names = list('omicron_folddrops_preprocessed_wSAVE_lessWD.csv')
 
 for (table_name in table_names){
   
-  
   # create path to save for each table
   tab_name <- strsplit(table_name, "\\.")[[1]][1]
   
   path_to_save <- file.path(table_dir, tab_name)
+  
+  figures_dir <- file.path(working_dir, "figures", "forest_plots", tab_name, "titers")
   
   # create subfolder for boxplots
   suppressWarnings(dir.create(path_to_save, recursive = TRUE))
@@ -79,7 +80,7 @@ for (table_name in table_names){
   
   forest_ba1 %>%
     filter(`Sera details long` %in% ba1_ba11_samples) -> forest_ba1
-  
+  stop()
   # ----------------------------- do the same for titers
   
   if(grepl("lessWD", table_name)){
@@ -119,6 +120,6 @@ for (table_name in table_names){
     theme_bw() + 
     theme(strip.background.x = element_blank()) -> p
   
-  
-    ggsave(file.path(table_dir,tab_name, paste0("paired_mean_titer_sub-", gsub("docx", "png", summary_tab_name))), p, width = 12, height = 4, units = "in", dpi = 300, ) 
+
+    ggsave(file.path(figures_dir, paste0("paired_mean_titer_sub-", gsub("docx", "png", summary_tab_name))), p, width = 12, height = 4, units = "in", dpi = 300, ) 
 }
