@@ -14,10 +14,12 @@ library(patchwork)
 library(ggpubr)
 library(rstatix)
 library(rempsyc)
-library(huxtable)
-library(flextable)
+# library(huxtable)
+# library(flextable)
+library(knitr)
+library(kableExtra)
 
-pkgs <- c("effectsize", "flextable", "broom", "report")
+pkgs <- c("effectsize", "flextable", "broom", "report", "coin")
 install_if_not_installed(pkgs)
 
 
@@ -30,8 +32,6 @@ utility_dir <- file.path(working_dir, "code", "utility")
 data_dir <- file.path(working_dir,'data')
 google_sheets_dir <- file.path(data_dir, "google_sheet_tables")
 #----------------------------------------------- set path to save -----------------------------------------------
-fileext <- "png"
-plot_titers <- TRUE
 
 source(file.path(utility_dir,'plot_functions_auto_label.R'))
 source(file.path(utility_dir, "prepare_table_for_forest_plots.R"))
@@ -95,50 +95,113 @@ for (table_name in table_names){
            `Fold change from WT` = log_fold_change,
            both_assays = ("PV" %in% standardised_assay) & ("LV" %in% standardised_assay)) -> forest_data_sub
   
-  forest_data_sub %>%
-    filter(both_assays) %>%
-    filter(shapiro_comb > 0.05) %>%
-    filter(count_n > 1) %>%
-    group_by(standardise_encounters) %>%
-    t_test(log_fold_change~standardised_assay) %>%
-    add_significance() %>%
-    select("Serum group" = standardise_encounters,
-           "Variable" = .y.,
-           "Group 1" = group1,
-           "Group 2" = group2,
-           n1, n2, statistic, df, p,
-           "Significance" = p.signif) %>%
-    mutate(Variable = gsub("log_fold_change", "Fold change from WT", Variable)) %>%
-    arrange(p)-> fc_from_wt_ttest
   
+  do_stat_test_and_effsize <- function(data_sub, test_formula="log_fold_change~standardised_assay", stat_test = "t"){
+    
+    if(stat_test == "t"){
+      data_sub %>%
+        filter(both_assays) %>%
+        filter(shapiro_comb > 0.05) %>%
+        filter(count_n > 1) %>%
+        group_by(standardise_encounters) %>%
+        t_test(as.formula(test_formula), detailed = TRUE) %>%
+        add_significance() %>%
+        mutate("95%CI (lower;upper)" = paste0(round(conf.low, 2), ";", round(conf.high, 2)),
+               statistic = round(statistic, 2),
+               p = round(p, 2),
+               df = round(df, 1)) %>%
+        select("Serum group" = standardise_encounters,
+               "n(PV)" = n1,
+               "n(LV)" = n2,
+               statistic, `95%CI (lower;upper)`, df, p,
+               "Significance" = p.signif) %>%
+        arrange(p)-> fc_from_wt_ttest
+      
+      # we are not assuming same variance across the groups, as sample size and collection times vary. We are also dealing with small <50 sample sizes, 
+      # so we do hedges correction
+      data_sub %>%
+        filter(both_assays) %>%
+        filter(shapiro_comb > 0.05) %>%
+        filter(count_n > 1) %>%
+        group_by(standardise_encounters) %>%
+        cohens_d(as.formula(test_formula), var.equal = FALSE, hedges.correction = TRUE) %>%
+        mutate(effsize = round(effsize, 2)) %>%
+        select("Serum group" = standardise_encounters,
+               "Effect size" = effsize,
+               "Magnitude" = magnitude) %>%
+        left_join(fc_from_wt_ttest, ., by = "Serum group") -> tab_return
+      
+      return(tab_return)
+    } else if(stat_test == "wilcoxon"){
+      
+      data_sub %>%
+        filter(both_assays) %>%
+        filter(shapiro_comb <= 0.05) %>%
+        filter(count_n > 1) %>%
+        group_by(standardise_encounters) %>%
+        wilcox_test(as.formula(test_formula), detailed = TRUE) %>%
+        add_significance() %>%
+        mutate("95%CI (lower;upper)" = paste0(round(conf.low, 2), ";", round(conf.high, 2)),
+               statistic = round(statistic, 2),
+               p = round(p, 2)) %>%
+        select("Serum group" = standardise_encounters,
+               "n(PV)" = n1,
+               "n(LV)" = n2,
+               statistic,`95%CI (lower;upper)`, p,
+               "Significance" = p.signif) %>%
+        arrange(p) -> fc_from_wt_wilcox
+      
+      data_sub %>%
+        filter(both_assays) %>%
+        filter(shapiro_comb <= 0.05) %>%
+        filter(count_n > 1) %>%
+        group_by(standardise_encounters) %>%
+        wilcox_effsize(as.formula(test_formula)) %>%
+        mutate(effsize = round(effsize, 2)) %>%
+        select("Serum group" = standardise_encounters,
+               "Effect size" = effsize,
+               "Magnitude" = magnitude) %>%
+        left_join(fc_from_wt_wilcox, ., by = "Serum group") -> tab_return
+      
+      return(tab_return)
+      
+    } else {
+      warning("Please specify 't' or 'wilcoxon' as stat test")
+      return(NULL)
+    }
+    
+  }
   
-  # Show below
-  forest_data_sub %>%
-    filter(both_assays) %>%
-    filter(shapiro_comb <= 0.05) %>%
-    filter(count_n > 1) %>%
-    group_by(standardise_encounters) %>%
-    wilcox_test(log_fold_change~standardised_assay) %>%
-    add_significance() %>%
-    select("Serum group" = standardise_encounters,
-           "Variable" = .y.,
-           "Group 1" = group1,
-           "Group 2" = group2,
-           n1, n2, statistic, p,
-           "Significance" = p.signif) %>%
-    mutate(Variable = gsub("log_fold_change", "Fold change from WT", Variable)) %>%
-    arrange(p) -> fc_from_wt_wilcox
+  fc_from_wt_ttest <- do_stat_test_and_effsize(forest_data_sub, test_formula = "log_fold_change~standardised_assay", stat_test = "t")
+  fc_from_wt_wilcox <- do_stat_test_and_effsize(forest_data_sub, test_formula = "log_fold_change~standardised_assay", stat_test = "wilcoxon")
   
-  fc_ttest <- format_stat_table_flex(fc_from_wt_ttest)
-  fc_wilcox <- format_stat_table_flex(fc_from_wt_wilcox)
+  kable(fc_from_wt_ttest, "latex") %>%
+    row_spec(0,bold=TRUE)
   
-  stat_doc <- officer::read_docx(path = paste0(path_to_save,paste0("/stat_test_assay_FCfromWT.docx")))
+  kable(fc_from_wt_wilcox, "latex") %>%
+    row_spec(0,bold=TRUE)
+  
+  stat_doc <- officer::read_docx()
+  # stat_doc <- officer::read_docx(path = paste0(path_to_save,paste0("/stat_test_assay_FCfromWT.docx")))
   
   stat_doc %>%
-    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of fold changes from WT/D614G to BA.1. A t-test was performed to compare pseudovirus (PV) and live virus (LV) assessed fold changes in different serum groups. Normality was checked with a Shapiro Wilks test.") %>%
-    flextable::body_add_flextable(fc_ttest) %>%
-    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of fold changes from WT/D614G to BA.1. A Wilcoxon-test was performed to compare pseudovirus (PV) and live virus (LV) assessed fold changes in different serum groups. Normality was checked with a Shapiro Wilks test.") %>%
-    flextable::body_add_flextable(fc_wilcox) -> stat_doc
+    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of fold changes from WT/D614G to BA.1. A t-test was performed to compare
+pseudovirus (PV) and live virus (LV) assessed Geometric Mean Titers
+(GMTs) in different serum groups. Normality was checked with a
+Shapiro-Wilk test and these serum groups were found to not differ
+significantly from a normal distribution. Results are ordered by
+increasing p-value. A statistic above 0 indicates higher values in Group
+1 than in Group 2. The effect size was calculated with Cohen's d for unequal variances and Hedge's correction due to small sample sizes. All tests were performed with the rstatix package.") %>%
+    officer::body_add_table(.,fc_from_wt_ttest, style = "table_template") %>%
+    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of fold changes from WT/D614G to BA.1. 
+                           A
+Wilcoxon-test was performed to compare pseudovirus (PV) and live virus
+(LV) assessed fold changes in different serum groups. Normality was
+checked with a Shapiro-Wilk test and these serum groups were found to
+differ significantly from a normal distribution. Results are ordered by
+increasing p-value. A statistic above 0 indicates higher values in Group
+1 than in Group 2. The effect size was calculated with Wilcoxon effect size. All tests were performed with the rstatix package") %>%
+    officer::body_add_table(.,fc_from_wt_wilcox, style = "table_template")-> stat_doc
   
   print(stat_doc, target =
           paste0(path_to_save,paste0("/stat_test_assay_FCfromWT.docx")))
@@ -179,48 +242,102 @@ for (table_name in table_names){
     filter(count_n > 1) %>%
     filter(shapiro_comb > 0.05) %>%
     group_by(`Comparator antigen`, standardise_encounters) %>%
-    t_test(Titer~standardised_assay) %>%
+    t_test(Titer~standardised_assay, detailed = TRUE) %>%
     add_significance() %>%
+    mutate("95%CI (lower;upper)" = paste0(round(conf.low, 2), ";", round(conf.high, 2)),
+           statistic = round(statistic, 2),
+           p = round(p, 4),
+           df = round(df, 1)) %>%
     select("Variant" = `Comparator antigen`,
           "Serum group" = standardise_encounters,
-           "Variable" = .y.,
-           "Group 1" = group1,
-           "Group 2" = group2,
-           n1, n2, statistic, df, p,
+          "n(PV)" = n1,
+          "n(LV)" = n2,
+          statistic, `95%CI (lower;upper)`, df, p,
            "Significance" = p.signif) %>%
     mutate(Variant = gsub("D614G", "WT", Variant)) %>%
     arrange(p)-> titer_ttest
   
-
+  
+  # add effect size
+  forest_data_comb %>%
+    filter(both_assays) %>%
+    filter(count_n > 1) %>%
+    filter(shapiro_comb > 0.05) %>%
+    group_by(`Comparator antigen`, standardise_encounters) %>%
+    cohens_d(Titer~standardised_assay, var.equal = FALSE, hedges.correction = TRUE) %>%
+    mutate(effsize = round(effsize, 2),
+           `Comparator antigen` = gsub("D614G", "WT", `Comparator antigen`)) %>%
+    select("Serum group" = standardise_encounters,
+           "Effect size" = effsize,
+           "Magnitude" = magnitude,
+           "Variant" = `Comparator antigen`) %>%
+    left_join(titer_ttest, ., by = c("Variant", "Serum group")) -> titer_ttest
+  
+  # wilcoxon test
   forest_data_comb %>%
     filter(both_assays) %>%
     filter(count_n > 1) %>%
     filter(shapiro_comb <= 0.05) %>%
     group_by(`Comparator antigen`, standardise_encounters) %>%
-    wilcox_test(Titer~standardised_assay) %>%
+    wilcox_test(Titer~standardised_assay, detailed = TRUE) %>%
     add_significance() %>%
+    mutate("95%CI (lower;upper)" = paste0(round(conf.low, 2), ";", round(conf.high, 2)),
+           statistic = round(statistic, 2),
+           p = round(p, 4)) %>%
     select("Variant" = `Comparator antigen`,
            "Serum group" = standardise_encounters,
-           "Variable" = .y.,
-           "Group 1" = group1,
-           "Group 2" = group2,
-           n1, n2, statistic, p,
+           "n(PV)" = n1,
+           "n(LV)" = n2,
+           statistic,`95%CI (lower;upper)`, p,
            "Significance" = p.signif) %>%
     mutate(Variant = gsub("D614G", "WT", Variant)) %>%
     arrange(p)-> titer_wilcox
   
-  fc_ttest <- format_stat_table_flex(titer_ttest)
-  fc_wilcox <- format_stat_table_flex(titer_wilcox)
+  forest_data_comb %>%
+    filter(both_assays) %>%
+    filter(count_n > 1) %>%
+    filter(shapiro_comb <= 0.05) %>%
+    group_by(`Comparator antigen`, standardise_encounters) %>%
+    wilcox_effsize(Titer~standardised_assay) %>%
+    mutate(effsize = round(effsize, 2),
+           `Comparator antigen` = gsub("D614G", "WT", `Comparator antigen`)) %>%
+    select("Serum group" = standardise_encounters,
+           "Effect size" = effsize,
+           "Magnitude" = magnitude,
+           "Variant" = `Comparator antigen`) %>%
+    left_join(titer_wilcox, ., by = c("Serum group", "Variant")) -> titer_wilcox
+  
+  kable(titer_ttest, "latex") %>%
+    row_spec(0,bold=TRUE)
+  
+  kable(titer_wilcox, "latex") %>%
+    row_spec(0,bold=TRUE)
   
   stat_doc <- officer::read_docx(path = paste0(path_to_save,paste0("/stat_test_assay_FCfromWT.docx")))
   
   stat_doc %>%
     officer::body_add_break() %>%
-    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of variant GMTs. A t-test was performed to compare pseudovirus (PV) and live virus (LV) assessed fold changes in different serum groups. Normality was checked with a Shapiro Wilks test.") %>%
-    flextable::body_add_flextable(fc_ttest) %>%
+    officer::body_add_par("Supplementary Table XX: 
+                          Assay-based statistical comparison of live
+virus vs pseudo virus variant GMTs.} A t-test was performed to compare
+pseudovirus (PV) and live virus (LV) assessed Geometric Mean Titers
+(GMTs) in different serum groups. Normality was checked with a
+Shapiro-Wilk test and these serum groups were found to not differ
+significantly from a normal distribution. Results are ordered by
+increasing p-value. A statistic above 0 indicates higher values in Group
+1 than in Group 2. The effect size was calculated with Cohen's d for unequal variances and Hedge's correction due to small sample sizes. All tests were performed with the rstatix package") %>%
+    officer::body_add_table(.,titer_ttest, style = "table_template") %>%
     officer::body_add_break() %>%
-    officer::body_add_par("Supplementary Table XX: Assay based statistical comparison of variant GMTs. A Wilcoxon-test was performed to compare pseudovirus (PV) and live virus (LV) assessed fold changes in different serum groups. Normality was checked with a Shapiro Wilks test.") %>%
-    flextable::body_add_flextable(fc_wilcox) -> stat_doc
+    officer::body_add_par("Supplementary Table XX: Assay-based statistical comparison of live
+virus vs pseudovirus variant GMTs.. 
+                          A Wilcoxon-test was performed to
+compare pseudovirus (PV) and live virus (LV) assessed Geometric Mean
+Titers (GMTs) in different serum groups. Normality was checked with a
+Shapiro-Wilk test and these serum groups were found to differ
+significantly from a normal distribution. Results are ordered by
+increasing p-value. A statistic above 0 indicates higher values in Group
+1 than in Group 2. The effect size was calculated with Wilcoxon effect size. All tests were performed with the rstatix package ") %>%
+    officer::body_add_table(.,titer_wilcox, style = "table_template") -> stat_doc
   
   print(stat_doc, target =
           paste0(path_to_save,paste0("/stat_test_assay_FCfromWT.docx")))
